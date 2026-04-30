@@ -1,6 +1,6 @@
 # WP Remove Generator Meta Tag
 
-Single-file WordPress plugin that removes the WordPress version meta generator tag from your site head **and** feed output.
+Single-file WordPress plugin that strips the WordPress version meta generator tag from your site head **and** every feed format.
 
 [![WordPress.org](https://img.shields.io/wordpress/plugin/installs/remove-generator-tag-for-wordpress.svg)](https://wordpress.org/plugins/remove-generator-tag-for-wordpress/)
 [![Rating](https://img.shields.io/wordpress/plugin/r/remove-generator-tag-for-wordpress.svg)](https://wordpress.org/plugins/remove-generator-tag-for-wordpress/#reviews)
@@ -10,16 +10,24 @@ Single-file WordPress plugin that removes the WordPress version meta generator t
 
 ## Why this exists
 
-By default, every page WordPress renders includes a `<meta name="generator" content="WordPress X.Y.Z">` tag in `<head>`, plus matching generator strings in every feed format. That tag tells anyone scanning the public web exactly which version of WordPress your site runs — useful for attackers looking for known-vulnerable releases, useless for everyone else.
+I keep running into hardened WordPress sites where someone forgot to strip the generator tag, and version fingerprinting still gets sites compromised in 2026. I built this plugin for the same reason I built the first version of it back in 2010: it should already be a default in core, and it isn't.
 
-This plugin removes the tag and its feed equivalents with a small, single-file PHP plugin.
+Originally published 2010. Rewritten 2026 for current WordPress.
 
 ## What it does
 
-- Removes the tag from the `<head>` of every page.
+- Removes `<meta name="generator">` from `<head>` on every front-end page.
 - Removes the generator string from every feed format WordPress emits — RSS2, RSS, RDF, Atom, comments feeds, OPML, and the Atom Publishing endpoint.
-- Filters `get_the_generator()` calls so plugins or SEO tools that invoke the helper directly also see an empty string.
-- Single file. No settings, no admin UI, no enqueued assets, no third-party services.
+- Filters `get_the_generator_*` so SEO and security plugins that call the helper directly also receive an empty string.
+
+## What it does *not* do
+
+- Strip `?ver=X.Y.Z` from enqueued asset URLs. That has real cache-busting trade-offs and belongs in a separate plugin.
+- Render an admin page, settings screen, or notices.
+- Enqueue CSS, JS, or images.
+- Phone home, log telemetry, or contact any third-party service.
+
+Small, single-purpose plugin. No settings page, no admin chrome, no tracking. Activate it and it works. Deactivate it and it leaves no trace.
 
 ## Requirements
 
@@ -30,7 +38,7 @@ This plugin removes the tag and its feed equivalents with a small, single-file P
 
 1. Install through the [WordPress plugin directory](https://wordpress.org/plugins/remove-generator-tag-for-wordpress/) or upload the plugin folder to `wp-content/plugins/`.
 2. Activate it from **Plugins** in WordPress admin.
-3. Reload any front-end page and search the HTML source for `generator`. The tag should be absent.
+3. Reload any front-end page and search the HTML source for `generator`. The tag should be absent. Check `/feed/` the same way.
 
 ## How it works
 
@@ -47,7 +55,7 @@ foreach ( $generator_filters as $filter ) {
 }
 ```
 
-The plugin hooks at boot — no `init`, no `wp_loaded`, no settings to read. WordPress core defines `wp_generator` and `the_generator` early in the request lifecycle, so detaching them at file load is the cheapest path.
+The plugin hooks at boot — no `init`, no `wp_loaded`, no settings to read. WordPress core registers `wp_generator` and `the_generator` early in the request lifecycle, so detaching them at file load is the cheapest path. The `get_the_generator_*` filter set covers every helper variant (`html`, `xhtml`, `atom`, `rss2`, `rss`, `comment`, `export`) so anything calling the helper directly receives an empty string instead of the version.
 
 ## Development
 
@@ -56,7 +64,7 @@ composer install
 composer run lint:phpcs
 ```
 
-PHPCS is configured to the WordPress-Extra ruleset with PHPCompatibilityWP for PHP 7.4+ checks. CI runs the same on every push.
+PHPCS runs against the WordPress-Extra ruleset with PHPCompatibilityWP set to PHP 7.4+. CI runs the same on every push. The plugin is one file; reading the source is the documentation.
 
 ## Changelog
 
@@ -68,4 +76,4 @@ GPL v2 or later. See [LICENSE](LICENSE).
 
 ## Author
 
-Christopher Ross — [thisismyurl.com](https://thisismyurl.com/)
+Built and maintained by Christopher Ross — 25 years working with WordPress, currently running a senior-dev consulting practice at This Is My URL. More plugins, writing, and case studies at [thisismyurl.com](https://thisismyurl.com/).
