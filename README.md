@@ -1,53 +1,71 @@
 # WP Remove Generator Meta Tag
 
-Removes the WordPress version `<meta name="generator">` tag from your site `<head>`. Originally published on the WordPress.org plugin directory in 2010 and maintained through 2016. Still functional on modern WordPress because the underlying `wp_head` hook signature has not changed.
+Single-file WordPress plugin that removes the WordPress version meta generator tag from your site head **and** feed output.
 
 [![WordPress.org](https://img.shields.io/wordpress/plugin/installs/remove-generator-tag-for-wordpress.svg)](https://wordpress.org/plugins/remove-generator-tag-for-wordpress/)
 [![Rating](https://img.shields.io/wordpress/plugin/r/remove-generator-tag-for-wordpress.svg)](https://wordpress.org/plugins/remove-generator-tag-for-wordpress/#reviews)
+[![License: GPL v2+](https://img.shields.io/badge/License-GPL_v2%2B-blue.svg)](https://www.gnu.org/licenses/gpl-2.0)
+
+---
 
 ## Why this exists
 
-WordPress publishes its version number in the `<head>` of every page by default. Telling the world which WordPress version you run is a small but unnecessary security signal — anyone scanning for known-vulnerable versions can find sites to target with a single curl request.
+By default, every page WordPress renders includes a `<meta name="generator" content="WordPress X.Y.Z">` tag in `<head>`, plus matching generator strings in every feed format. That tag tells anyone scanning the public web exactly which version of WordPress your site runs — useful for attackers looking for known-vulnerable releases, useless for everyone else.
 
-This plugin removes that meta tag with a single line of code wrapped in a clean OOP class.
+This plugin removes the tag and its feed equivalents with a small, single-file PHP plugin.
 
-## Features
+## What it does
 
-- Removes `<meta name="generator" content="WordPress X.Y.Z" />` from your `<head>`.
-- Zero configuration. Activate it and it works.
-- No admin pages, no settings, no payload.
-- Multilingual support included (English, German, French).
+- Removes the tag from the `<head>` of every page.
+- Removes the generator string from every feed format WordPress emits — RSS2, RSS, RDF, Atom, comments feeds, OPML, and the Atom Publishing endpoint.
+- Filters `get_the_generator()` calls so plugins or SEO tools that invoke the helper directly also see an empty string.
+- Single file. No settings, no admin UI, no enqueued assets, no third-party services.
 
 ## Requirements
 
-- WordPress 3.2.0 or later (tested through 4.1; works on modern WP).
-- PHP 5.3+.
+- WordPress 6.4 or later.
+- PHP 7.4 or later.
 
 ## Installation
 
-1. Upload the plugin folder to `wp-content/plugins/` or install via the WordPress.org directory.
-2. Activate the plugin from **Plugins** in WordPress admin.
-3. Reload any page on the front end and view-source — the generator tag is gone.
+1. Install through the [WordPress plugin directory](https://wordpress.org/plugins/remove-generator-tag-for-wordpress/) or upload the plugin folder to `wp-content/plugins/`.
+2. Activate it from **Plugins** in WordPress admin.
+3. Reload any front-end page and search the HTML source for `generator`. The tag should be absent.
 
-## How to verify it works
+## How it works
 
-Before installing, view the HTML source of any page on your site and search for `generator`. You should see a meta tag exposing your WordPress version.
+```php
+// In wp-remove-generator-meta.php
+remove_action( 'wp_head', 'wp_generator' );
 
-After installing, reload the page (clearing cache if needed) and search for `generator` again. The tag should be absent.
+foreach ( $feed_hooks as $hook ) {
+    remove_action( $hook, 'the_generator' );
+}
 
-## Status
+foreach ( $generator_filters as $filter ) {
+    add_filter( $filter, __NAMESPACE__ . '\\suppress_generator_string', 10, 0 );
+}
+```
 
-Maintenance mode. Active installs: ~200 across the WordPress community.
-The plugin is intentionally minimal and does not need active development.
+The plugin hooks at boot — no `init`, no `wp_loaded`, no settings to read. WordPress core defines `wp_generator` and `the_generator` early in the request lifecycle, so detaching them at file load is the cheapest path.
 
-For active development of WordPress + SEO tooling, see [thisismyurl.com](https://thisismyurl.com/).
+## Development
+
+```sh
+composer install
+composer run lint:phpcs
+```
+
+PHPCS is configured to the WordPress-Extra ruleset with PHPCompatibilityWP for PHP 7.4+ checks. CI runs the same on every push.
+
+## Changelog
+
+See [`readme.txt`](readme.txt) for the full WordPress.org changelog.
 
 ## License
 
-GPL v2 or later.
+GPL v2 or later. See [LICENSE](LICENSE).
 
-## Contributors
+## Author
 
-- Christopher Ross — original author
-- Meagan Hanes — co-maintainer
-
+Christopher Ross — [thisismyurl.com](https://thisismyurl.com/)

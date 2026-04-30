@@ -1,80 +1,78 @@
 <?php
-/*
-Plugin Name: WP Remove Generator Meta Tag
-Plugin URI: http://thisismyurl.com/downloads/remove-generator-meta-tag/
-Description: This plugin is designed to insert a piece of code into your WordPress website, which will automatically remove the WordPress version from your header.
-Author: Christopher Ross
-Author URI: http://thisismyurl.com/
-Tags: meta, generator, security, remove generator, wordpress version
-Version: 15.01
-*/
-
 /**
- * WP Remove Generator Meta Tag
+ * Plugin Name:       WP Remove Generator Meta Tag
+ * Plugin URI:        https://thisismyurl.com/plugins/remove-generator-meta-tag/
+ * Description:       Removes the WordPress version meta generator tag from the site head and feed output.
+ * Version:           16.0.0
+ * Requires at least: 6.4
+ * Requires PHP:      7.4
+ * Author:            Christopher Ross
+ * Author URI:        https://thisismyurl.com/
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       remove-generator-tag-for-wordpress
  *
- * This file contains all the logic required for the plugin
- *
- * @link		http://wordpress.org/extend/plugins/remove-generator-meta-tag/
- *
- * @package 	WP Remove Generator Meta Tag
- * @copyright	Copyright ( c ) 2008, Chrsitopher Ross
- * @license		http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU General Public License, v2 ( or newer )
- *
- * @since 		WP Remove Generator Meta Tag 1.0
+ * @package ThisIsMyURL\RemoveGenerator
  */
 
+declare( strict_types = 1 );
 
+namespace ThisIsMyURL\RemoveGenerator;
 
-/* if the plugin is called directly, die */
-if ( ! defined( 'WPINC' ) )
-	die;
-	
-	
-define( 'THISISMYURL_WPRGMT_NAME', 'Remove Generator Meta Tag' );
-define( 'THISISMYURL_WPRGMT_SHORTNAME', 'Remove Generator' );
+defined( 'ABSPATH' ) || exit;
 
-define( 'THISISMYURL_WPRGMT_FILENAME', plugin_basename( __FILE__ ) );
-define( 'THISISMYURL_WPRGMT_FILEPATH', dirname( plugin_basename( __FILE__ ) ) );
-define( 'THISISMYURL_WPRGMT_FILEPATHURL', plugin_dir_url( __FILE__ ) );
-
-define( 'THISISMYURL_WPRGMT_NAMESPACE', basename( THISISMYURL_WPRGMT_FILENAME, '.php' ) );
-define( 'THISISMYURL_WPRGMT_TEXTDOMAIN', str_replace( '-', '_', THISISMYURL_WPRGMT_NAMESPACE ) );
-
-define( 'THISISMYURL_WPRGMT_VERSION', '15.01' );
-
-include_once( 'thisismyurl-common.php' );
-
-
+const VERSION = '16.0.0';
 
 /**
- * Creates the class required for the plugin
+ * Detach every WordPress generator emitter at boot.
  *
- * @author     Christopher Ross <info@thisismyurl.com>
- * @version    Release: @15.01@
- * @see        wp_enqueue_scripts()
- * @since      Class available since Release 15.01
- *
+ * Core prints the generator tag in `<head>` via `wp_generator()` and in feed
+ * output via `the_generator()` on a handful of per-format hooks. Removing
+ * both is what users actually expect when they install a "remove generator"
+ * plugin — not just hiding the head tag while leaving the feeds leaky.
  */
-if( ! class_exists( 'thissimyurl_RemoveGeneratorTag' ) ) {
-class thissimyurl_RemoveGeneratorTag extends thisismyurl_Common_WPRGMT {
+function bootstrap(): void {
+	remove_action( 'wp_head', 'wp_generator' );
 
-	/**
-	  * Standard Constructor
-	  *
-	  * @access public
-	  * @static
-	  * @uses http://codex.wordpress.org/Function_Reference/remove_action
-	  * @since Method available since Release 15.01
-	  *
-	  */
-	public function run() {
-		remove_action( 'wp_head' , 'wp_generator' );
+	$feed_hooks = [
+		'rss2_head',
+		'commentsrss2_head',
+		'rss_head',
+		'rdf_header',
+		'atom_head',
+		'comments_atom_head',
+		'opml_head',
+		'app_head',
+	];
+
+	foreach ( $feed_hooks as $hook ) {
+		remove_action( $hook, 'the_generator' );
 	}
-	
-	
-}
+
+	$generator_filters = [
+		'get_the_generator_html',
+		'get_the_generator_xhtml',
+		'get_the_generator_atom',
+		'get_the_generator_rss2',
+		'get_the_generator_rdf',
+		'get_the_generator_comment',
+		'get_the_generator_export',
+	];
+
+	foreach ( $generator_filters as $filter ) {
+		add_filter( $filter, __NAMESPACE__ . '\\suppress_generator_string', 10, 0 );
+	}
 }
 
-$thissimyurl_RemoveGeneratorTag = new thissimyurl_RemoveGeneratorTag;
+/**
+ * Returns an empty string so any direct caller of `get_the_generator()`
+ * also gets a blank result. Belt-and-suspenders for plugins, themes, or
+ * SEO tools that may call the helper independently of the head/feed hooks.
+ *
+ * @return string
+ */
+function suppress_generator_string(): string {
+	return '';
+}
 
-$thissimyurl_RemoveGeneratorTag->run();
+bootstrap();
