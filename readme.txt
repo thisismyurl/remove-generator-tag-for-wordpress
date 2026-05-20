@@ -12,6 +12,8 @@ Removes the WordPress version meta generator tag from your site head and from ev
 
 == Description ==
 
+ARCHIVED: This plugin is no longer actively maintained. It is provided as-is for legacy installs, and active support/testing is not guaranteed.
+
 I keep running into hardened WordPress sites where someone forgot to strip the generator tag, and version fingerprinting still gets sites compromised in 2026. I built this plugin for the same reason I built the first version of it back in 2010: it should already be a default in core, and it isn't.
 
 By default WordPress prints `<meta name="generator" content="WordPress X.Y.Z">` in the `<head>` of every page, plus matching generator strings in every feed format. That tag tells anyone scanning the public web exactly which version of WordPress you run. Useful for attackers cross-referencing known-vulnerable releases. Useless for everyone else.
