@@ -2,9 +2,9 @@
 Contributors: thisismyurl
 Tags: generator, security, header, version, hardening
 Requires at least: 6.4
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 16.0.0
+Stable tag: 16.6147
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,6 @@ Removes the WordPress version meta generator tag from your site head and from ev
 
 == Description ==
 
-ARCHIVED: This plugin is no longer actively maintained. It is provided as-is for legacy installs, and active support/testing is not guaranteed.
 
 I keep running into hardened WordPress sites where someone forgot to strip the generator tag, and version fingerprinting still gets sites compromised in 2026. I built this plugin for the same reason I built the first version of it back in 2010: it should already be a default in core, and it isn't.
 
@@ -57,6 +56,12 @@ It removes one small piece of public information attackers use to fingerprint yo
 Out of scope. This plugin only handles the generator meta tag and feed generator strings. Asset version stripping is a separate concern with real cache-busting trade-offs, and I'd rather do one thing correctly than two things halfway.
 
 == Changelog ==
+
+= 16.6147 =
+* Unified plugin versioning to the x.Yddd calendar-version scheme.
+* Confirmed compatibility with WordPress 7.0.
+* Resumed active GitHub development; README and project metadata refreshed.
+
 
 = 16.0.0 =
 * Full rewrite from scratch for 2026.
