@@ -4,7 +4,7 @@ Tags: generator, security, header, version, hardening
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 16.6147
+Stable tag: 16.6148.2110
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,9 @@ It removes one small piece of public information attackers use to fingerprint yo
 Out of scope. This plugin only handles the generator meta tag and feed generator strings. Asset version stripping is a separate concern with real cache-busting trade-offs, and I'd rather do one thing correctly than two things halfway.
 
 == Changelog ==
+
+= 16.6148 =
+* Added a `.distignore` so development and build scaffolding (composer.json, phpcs.xml.dist, .editorconfig, .github) no longer ships in the WordPress.org release zip.
 
 = 16.6147 =
 * Unified plugin versioning to the x.Yddd calendar-version scheme.
