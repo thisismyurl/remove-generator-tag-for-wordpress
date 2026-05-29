@@ -57,6 +57,9 @@ Out of scope. This plugin only handles the generator meta tag and feed generator
 
 == Changelog ==
 
+= 16.6148 =
+* Added a `.distignore` so development and build scaffolding (composer.json, phpcs.xml.dist, .editorconfig, .github) no longer ships in the WordPress.org release zip.
+
 = 16.6147 =
 * Unified plugin versioning to the x.Yddd calendar-version scheme.
 * Confirmed compatibility with WordPress 7.0.
