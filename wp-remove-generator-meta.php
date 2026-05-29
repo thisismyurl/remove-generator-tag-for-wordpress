@@ -3,7 +3,7 @@
  * Plugin Name:       WP Remove Generator Meta Tag
  * Plugin URI:        https://thisismyurl.com/plugins/remove-generator-meta-tag/
  * Description:       Removes the WordPress version meta generator tag from the site head and feed output.
- * Version:           16.6147
+ * Version:           16.6148.2110
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            Christopher Ross
